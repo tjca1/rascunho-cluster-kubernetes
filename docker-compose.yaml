@@ -1,0 +1,14 @@
+version: '3' 
+services: 
+ scm: 
+  image: "tjca1/backend-scm:1.0.0" 
+  ports: 
+   - "3030:3030" 
+ user: 
+  image: "tjca1/backend-user:1.0.0" 
+  ports: 
+   - "3020:3020" 
+ frontend: 
+  image: "tjca1/frontend-redesocial:latest" 
+  ports: 
+   - "80:80" 

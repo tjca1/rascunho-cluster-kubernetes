@@ -1,0 +1,9 @@
+kubectl apply -f 1_kubernetes-dashboard.yaml
+kubectl apply -f 2_heapster.yaml
+kubectl apply -f 3_influxdb.yaml
+kubectl apply -f 4_heapster-rbac.yaml
+kubectl apply -f 5_eks-admin-service-account.yaml
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')
+
+
+

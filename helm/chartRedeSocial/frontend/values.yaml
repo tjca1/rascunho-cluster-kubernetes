@@ -1,0 +1,4 @@
+img:
+  tag: 1.0.1-staging
+service:
+  port: 30080

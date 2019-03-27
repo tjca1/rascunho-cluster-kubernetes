@@ -1,0 +1,1641 @@
+
+
+docker run -d --name projeto-test-bp-container -p 8888:30001 tjca1/projeto-spring-boot-bp:1.0.0
+
+tjca1@hotmail.com:123456
+dGpjYTFAaG90bWFpbC5jb206MTIzNDU2Cg==
+
+//////////////////////////////////////////////////////////////////////////////////
+//////////////HELM////////////////////////////////////////////////////////////////
+/////instalação///
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+ou
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get | bash
+//////////
+helm init
+/////////
+root@linux:~/cursoDevOps/helm/confsTiller# kubectl apply -f 01_tiller-sa.yaml
+root@linux:~/cursoDevOps/helm/confsTiller# kubectl apply -f 02_allresources-clusterrole.yaml
+root@linux:~/cursoDevOps/helm/confsTiller# kubectl apply -f 03_cluster_role_binding.yaml
+///////////////ISSO ///////////////////////////////////////////////
+  /////kubectl describe sa tiller -n kube-system
+  /////kubectl edit svc tiller-deploy -n kube-system
+  /////kubectl edit deployment tiller-deploy -n kube-system
+  /////kubectl get deploy tiller-deploy -n kube-system -o yaml | grep tiller
+  /////kubectl get deploy tiller-deploy -n kube-system -o yaml | grep account
+  /////kubectl patch deployment tiller-deploy -n kube-system --patch "$(cat 04_patch.yaml)"
+///OU////
+helm init --service-account tiller
+////////////////////////////////////////////
+helm repo update
+helm search tets
+helm install stable/tomcat
+helm ls
+/////NAME                	REVISION	UPDATED                 	STATUS  	CHART       	APP VERSION	NAMESPACE
+/////solitary-labradoodle	1       	Wed Mar 20 09:45:23 2019	DEPLOYED	tomcat-0.2.0	7          	default 
+helm delete solitary-labradoodle
+////////////////////////
+root@linux:~/cursoDevOps/helm/chartRedeSocial/frontend# helm install .
+helm ls
+helm delete --purge vigilant-panther
+helm install . --name frontend --namespace thiago
+
+//////////////////restart KUBERNETES//////////////////////////////////////////////
+systemctl restart kubelet
+
+systemctl restart ssh 
+//////////////////////////////////////////////////////////////////////////////////
+kubectl get cm --all-namespaces
+cursoDevOps# kubectl get cm --all-namespaces
+docker build -t tjca1/frontend-redesocial:1.0.1-staging --build-arg NPM_ENV=staging .
+docker build -t tjca1/frontend-redesocial:1.0.3 .
+kubectl get all -n staging
+kubectl apply -f backend-user-deploy.yaml --namespace staging
+
+****** entrar no pod********
+kubectl exec -it nome_pod sh -n staging
+whoami
+root
+kubectl exec -it backend-scm-76578699d9-gbddb sh -n staging
+backend-scm-76578699d9-gbddb
+======kubernetes======================================================================================
+//////////docker///////////////////////////////////////////////////////////////////////
+sudo apt-get update
+sudo apt-get install -y apt-transport-https ca-certificates curl software-properties-common
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install -y docker-ce=18.06.1~ce~3-0~ubuntu
+sudo usermod -aG docker $USER
+//sudo poweroff
+//sudo reboot
+desativar swap ubuntu
+swapoff -a 
+///////////instalação kubernetes//////////////////////////////////////////////
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
+////ou////
+cat <<EOF >/etc/apt/sources.list.d/kubernetes.list
+deb https://apt.kubernetes.io/ kubernetes-xenial main
+EOF
+apt-get update
+apt-get install -y kubelet=1.11.3-00 kubeadm=1.11.3-00 kubectl=1.11.3-00
+apt-mark hold kubelet kubeadm kubectl
+/////config cluster///////////////////////////////////////////////////////////////////////////
+sudo kubeadm init --pod-network-cidr=10.244.0.0/16
+/////acrescentar novas maquinas ///////////////////
+kubeadm join 192.168.1.5:6443 --token accxh1.qiloqewdkcsze1cn --discovery-token-ca-cert-hash sha256:66005d3e34a165fd8d1b1b3b8fa75b91df0283cd636251f5d4a0fd1b4fc3ca5a
+//////////////////////////////////////////////////////
+kubeadm join 192.168.1.5:6443 --token lq1oo9.qyqewoxaob39ufqo --discovery-token-ca-cert-hash sha256:d8a2c97d4b1db168724692c9974ecde7afe9b35b69441c86105aeda3b8ae7165
+/////////////////////////////configurando o kubectl///////////////////////////////////////////
+kubectl cluster-info
+||||||Kubernetes master is running at https://127.0.0.1:8443
+||||||To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+||||||The connection to the server 127.0.0.1:8443 was refused - did you specify the right host or port?
+////////////////
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+chown $(id -u):$(id -g) $HOME/.kube/config
+kubectl cluster-info
+||||||Kubernetes master is running at https://192.168.1.5:6443
+||||||KubeDNS is running at https://192.168.1.5:6443/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+||||||To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+/////////////////////////////////////////////////////////////////////////////////////////////////
+kubectl get nodes
+kubectl get all --all-namespaces
+kubectl get nodes
+/////////////////////////////////////////////////////////////////////////////////////////////////
+kubectl cluster-info
+|||||kube-system   pod/coredns-78fcdf6894-6d46q        0/1       Pending   0          20m
+|||||kube-system   pod/coredns-78fcdf6894-rfn6x        0/1       Pending   0          20m
+|||||kube-system   pod/etcd-linux                      1/1       Running   0          20m
+|||||kube-system   pod/kube-apiserver-linux            1/1       Running   0          20m
+|||||kube-system   pod/kube-controller-manager-linux   1/1       Running   0          20m
+|||||kube-system   pod/kube-proxy-bsjbz                1/1       Running   0          20m
+|||||kube-system   pod/kube-scheduler-linux            1/1       Running   0          20m
+///////////////adicionar network///flannel//////////////////////////////////////////////////////////////
+kubectl apply -f https://raw.githubusercontent.com/coreos/flannel/v0.10.0/Documentation/kube-flannel.yml
+/////ou////
+kubectl apply -f /root/cursoDevOps/kube-flannel.yml
+kubectl cluster-info
+kubectl get all -n kube-system
+|||||kube-system   pod/coredns-78fcdf6894-6d46q        1/1       Running   0          32m
+|||||kube-system   pod/coredns-78fcdf6894-rfn6x        1/1       Running   0          32m
+|||||kube-system   pod/etcd-linux                      1/1       Running   0          31m
+|||||kube-system   pod/kube-apiserver-linux            1/1       Running   0          31m
+|||||kube-system   pod/kube-controller-manager-linux   1/1       Running   0          31m
+|||||kube-system   pod/kube-flannel-ds-c8t56           1/1       Running   0          1m
+|||||kube-system   pod/kube-proxy-bsjbz                1/1       Running   0          32m
+|||||kube-system   pod/kube-scheduler-linux            1/1       Running   0          31m
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+kubectl get nodes
+kubectl taint nodes --all node-role.kubernetes.io/master-      // opcional colocando a node master para armazenar os nodes///
+////teste////
+kubectl run kubernetes-bootcamp --image=gcr.io/google-samples/kubernetes-bootcamp:v1 --port=8080
+kubectl get deployment
+|||||NAME                  DESIRED   CURRENT   UP-TO-DATE   AVAILABLE   AGE
+|||||kubernetes-bootcamp   1         1         1            1           1m
+kubectl proxy
+/////////////////////
+kubectl get pods
+||||||NAME                                  READY     STATUS    RESTARTS   AGE
+||||||kubernetes-bootcamp-69bf88c8c-7trjt   1/1       Running   0          10m
+kubectl logs kubernetes-bootcamp-69bf88c8c-7trjt
+||||||Kubernetes Bootcamp App Started At: 2019-03-13T13:24:16.596Z | Running On:  kubernetes-bootcamp-69bf88c8c-7trjt
+curl http://linux:8001/api/v1/namespaces/default/pods/kubernetes-bootcamp-69bf88c8c-7trjt/proxy/
+     http://localhost:8001/api/v1/namespaces/default/pods/kubernetes-dashboard-5dd89b9875-f4gkr/proxy/
+///////visualizar o arquivo yaml do pod criado/////////////////////////////////////////////////////////
+kubectl get deploy kubernetes-bootcamp-69bf88c8c-7trjt -n kkkkk -o yaml
+///////editar o arquivo yaml do pod criado mod vi, vim///////////////////////////////////////////////
+kubectl edit deploy kubernetes-bootcamp
+////////tipos de services kubernetes/////////////////////////////////////////////////////////////////////////////////////////////
+***node port = prover acesso aos pods por ip e porta na nuvem ou no host raiz caso o kubernetes n esteja rodando no cloud provider
+***load balance = prover acesso aos pods por ip na nuvem ou no host raiz caso o kubernetes n esteja rodando no cloud provider
+***prover acesso aos pods por ip na rede do docker, internamente!
+///////////////////////configurando dashBoard/////////////////////////////////////////////////////////
+kubectl apply -f /root/cursoDevOps/kubernetes-dashboard_v1_10_1/kubernetes-dashboard.yaml
+////
+voltar tudo 
+cd /
+/////////
+Vamos agora expor nosso Dashboard:
+kubectl expose deployment kubernetes-dashboard --name=kubernetes-dashboard-nodeport --port=443 --target-port=8443 --type=NodePort -n kube-system
+kubectl expose deployment kubernetes-dashboard --name=kubernetes-dashboard-novo --port=443 --target-port=8443 --type=NodePort -n kube-system
+kubectl get all --all-namespaces
+////deixar en stad by/minitorar////////////////////////////////////////////////
+watch kubectl get all --all-namespaces
+///////expondo o deployment em modo service nodeport///////////////////////////
+kubectl expose deployment kubernetes-dashboard --name=kubernetes-dashboard-nodeport --port=443 --target-port=8443 --type=NodePort -n kube-system
+
+kubectl expose deployment kubernetes-dashboard --name=kubernetes-dashboard-nodeport --port=443 --target-port=8443 --type=NodePort -n lab1 lab2 lab3
+
+/////ver as infos do deploy/////
+kubectl get all --all-namespaces | grep dash
+kubectl describe pod/kubernetes-dashboard-5dd89b9875-jbw7w -n kube-system
+//////achando o token do dashBoard/////////////////////////////////////////////
+kubectl describe sa kubernetes-dashboard -n kube-system
+ou
+kubectl describe pod/kubernetes-dashboard-5dd89b9875-jbw7w -n kube-system |grep token
+||||||Mountable secrets:   kubernetes-dashboard-token-khq6b
+||||||Tokens:              kubernetes-dashboard-token-khq6b
+*achando o token/////////////
+
+||||||token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbGNtNWxkR1Z6TFdSaGMyaGliMkZ5WkMxMGIydGxiaTFyYUhFMllpSXNJbXQxWW1WeWJtVjBaWE11YVc4dmMyVnlkbWxqWldGalkyOTFiblF2YzJWeWRtbGpaUzFoWTJOdmRXNTBMbTVoYldVaU9pSnJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVnlkbWxqWlMxaFkyTnZkVzUwTG5WcFpDSTZJakF3TTJSbE5qQXhMVFExWTJZdE1URmxPUzA1TkRsaUxUQXdNakZqWTJSaE1qUTRPQ0lzSW5OMVlpSTZJbk41YzNSbGJUcHpaWEoyYVdObFlXTmpiM1Z1ZERwcmRXSmxMWE41YzNSbGJUcHJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0o5LkF1MHdHQlVqWHc0TEpKRi1RZ2lYX2ZDc3NCb0ZRbk8xWmFQeEpOSC1XaFZWa2pUV0I3eFRhbHJfSDlYUjdNRUo2Q3BqVVFIMVVXZzhUOXhSazJxN3RXd1RQd1VpUFE2bVVhV0cxQ3M1THNDSUktRFdQSVlTRHh0NkVTSG5oREdFTC02OGtSZlYtREZEclZBV042M05jSXRkUjBUWlRBZi1yWnJYNnQzVEtYSVRITnoyeXZLNnctbnZGb0lCeTR4c1ZmbVI1TVVKTVdJaERIeTRwc3hyaEJETXhOQ2lGX0YwNElHNktRQTBjcVFtVWdVcDdsNUp2RkVKVVFZSkc5S0kyallnZmFYd0VYTktDQllnbnlXd2ttTUo0UXNYdFdMbGVZckhZMkN0ZXNPRklDcVBkbnFWdEdJR2VpZlRoRlBSQTFhakEwYlVTbGJ4a1RSTFZWQk5vUQ==
+echo ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbGNtNWxkR1Z6TFdSaGMyaGliMkZ5WkMxMGIydGxiaTFyYUhFMllpSXNJbXQxWW1WeWJtVjBaWE11YVc4dmMyVnlkbWxqWldGalkyOTFiblF2YzJWeWRtbGpaUzFoWTJOdmRXNTBMbTVoYldVaU9pSnJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVnlkbWxqWlMxaFkyTnZkVzUwTG5WcFpDSTZJakF3TTJSbE5qQXhMVFExWTJZdE1URmxPUzA1TkRsaUxUQXdNakZqWTJSaE1qUTRPQ0lzSW5OMVlpSTZJbk41YzNSbGJUcHpaWEoyYVdObFlXTmpiM1Z1ZERwcmRXSmxMWE41YzNSbGJUcHJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0o5LkF1MHdHQlVqWHc0TEpKRi1RZ2lYX2ZDc3NCb0ZRbk8xWmFQeEpOSC1XaFZWa2pUV0I3eFRhbHJfSDlYUjdNRUo2Q3BqVVFIMVVXZzhUOXhSazJxN3RXd1RQd1VpUFE2bVVhV0cxQ3M1THNDSUktRFdQSVlTRHh0NkVTSG5oREdFTC02OGtSZlYtREZEclZBV042M05jSXRkUjBUWlRBZi1yWnJYNnQzVEtYSVRITnoyeXZLNnctbnZGb0lCeTR4c1ZmbVI1TVVKTVdJaERIeTRwc3hyaEJETXhOQ2lGX0YwNElHNktRQTBjcVFtVWdVcDdsNUp2RkVKVVFZSkc5S0kyallnZmFYd0VYTktDQllnbnlXd2ttTUo0UXNYdFdMbGVZckhZMkN0ZXNPRklDcVBkbnFWdEdJR2VpZlRoRlBSQTFhakEwYlVTbGJ4a1RSTFZWQk5vUQ== | base64 --decode
+****o resultado na linha de baixo é o token final, cole no campo token no browser e autentique-se, ex:gerado****
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZC10b2tlbi1raHE2YiIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlcm5ldGVzLWRhc2hib2FyZCIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjAwM2RlNjAxLTQ1Y2YtMTFlOS05NDliLTAwMjFjY2RhMjQ4OCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlcm5ldGVzLWRhc2hib2FyZCJ9.Au0wGBUjXw4LJJF-QgiX_fCssBoFQnO1ZaPxJNH-WhVVkjTWB7xTalr_H9XR7MEJ6CpjUQH1UWg8T9xRk2q7tWwTPwUiPQ6mUaWG1Cs5LsCII-DWPIYSDxt6ESHnhDGEL-68kRfV-DFDrVAWN63NcItdR0TZTAf-rZrX6t3TKXITHNz2yvK6w-nvFoIBy4xsVfmR5MUJMWIhDHy4psxrhBDMxNCiF_F04IG6KQA0cqQmUgUp7l5JvFEJUQYJG9KI2jYgfaXwEXNKCBYgnyWwkmMJ4QsXtWLleYrHY2CtesOFICqPdnqVtGIGeifThFPRA1ajA0bUSlbxkTRLVVBNoQ
+
+echo ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbGNtNWxkR1Z6TFdSaGMyaGliMkZ5WkMxMGIydGxiaTFuYTNaM2FpSXNJbXQxWW1WeWJtVjBaWE11YVc4dmMyVnlkbWxqWldGalkyOTFiblF2YzJWeWRtbGpaUzFoWTJOdmRXNTBMbTVoYldVaU9pSnJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVnlkbWxqWlMxaFkyTnZkVzUwTG5WcFpDSTZJalZoTldJM05UUTFMVFE1WWpVdE1URmxPUzFoTTJSakxUQXdNakZqWTJSaE1qUTRPQ0lzSW5OMVlpSTZJbk41YzNSbGJUcHpaWEoyYVdObFlXTmpiM1Z1ZERwcmRXSmxMWE41YzNSbGJUcHJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0o5Lk45Y0c4bzVHNVBReDJyYmxlRmxpUi0zTjhBR1A5ZjZLTHJuU0RuY1lWbUV3VXFBeEhDUkp2eldWM2VuNzI0VWxsY0pPY1NfbG9zd0dMSE55YlhDN1Z0eUptVzhTRnVuZjBJY0JNaC1jNFE4STRJZ2pjLTFvbW9xTEh5bjFDNm1vdEg4N21KYUhkM0N3c2JyRi1ZaUhHRzNQdjRnOU90Q01iZ09OX1VRLUxzbmlCVXJaX0Rhb1FINzNKcDVndEw1dGVNdF9HOXI4Q2xQQTR6WEc5OXdOMHU3ek9Vbmg3MldkMko0Yk9iY2pkOHR4MVRKZmxmSWJxU3VRaWJHbktjOXNBaC1OdG5fZGxYOGRYRWdGOW9pbWZBck0ySFFZSGQ4R3FfbWN3X3JlRi13QjZ1OU1vT1lQR0g0T2F5eWR1d09CUmlUQk1vX1J2bDlzX1JVczJBby1IQQ== | base64 --decode
+
+/////////////CRIANDO USUARIOS KUBERNETES///////////////////////////////////////////////////////////////////////////////////////
+kubectl create serviceaccount kkk -n kube-system
+kubectl create clusterrolebinding kubeadmin-admin_ --clusterrole=admin --serviceaccount=kube-system:kkk
+kubectl describe sa kkk -n kube-system
+kubectl get secret kkk-token-wkw9q -n kube-system -o yaml
+
+
+kubectl create serviceaccount kubeadm -n kube-system
+kubectl create clusterrolebinding kubeadmin-binding4 --clusterrole=cluster-admin2 --serviceaccount=kube-system:kubeadm3
+
+
+
+||||||serviceaccount/kubeadmin created
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep eks-admin | awk '{print $1}')
+kubectl -n kube-system describe secret $(kubectl -n kube-system get secret | grep kubeadm2 | awk '{print $1}')
+
+ eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMua
+W8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlYWRtMi10b2tlbi1nNGM4biIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VydmljZS1hY2NvdW50Lm5hbWUiOiJrdWJlYWRtMiIsImt1YmVybmV0ZXMuaW8vc2Vydml
+jZWFjY291bnQvc2VydmljZS1hY2NvdW50LnVpZCI6IjBiNTNjMGI3LTRhMGEtMTFlOS1iMmViLTAwMjFjY2RhMjQ4OCIsInN1YiI6InN5c3RlbTpzZXJ2aWNlYWNjb3VudDprdWJlLXN5c3RlbTprdWJlYWRtMiJ9.I60hjMbxDHodJQObGYvW
+vE_P_hV__lH794tZ-0bsfMxPPET9XELiXO9-d885miptJvIyPDgbdRMlUhOwMn6ur1pcj_EaYNrslNNd2o2txVLtuNaY2uOXwQ84wLqN7Vxzy25nca6UMHDbp8vOxWH4KBS--0AB7t9AtXvF6_XW8qUZN_fNb-PN-cCcCIjqIFSp5XGUdYeBZo
+ZI6M4OcYCBfNGl7FxKfvEFx24uEpya5YKwZ4jyj1Imz0BndeDhTLRUAUiqyNUv3I0TYT6iDwNatYSK6azttqRI6_5dUPTfvPuFkgFEQVyUcu24BjXk6FES6yv9v2IsvRV87kL2Q7hrnA
+
+kubectl describe sa kubeadm2 -n kube-system
+kubeadm2-token-g4c8n
+
+kubectl get secret kubeadm2-token-g4c8n -n kube-system -o yaml |grep token:
+echo  ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbFlXUnRNaTEwYjJ0bGJpMW5OR000YmlJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZ5ZG1salpTMWhZMk52ZFc1MExtNWhiV1VpT2lKcmRXSmxZV1J0TWlJc0ltdDFZbVZ5Ym1WMFpYTXVhVzh2YzJWeWRtbGpaV0ZqWTI5MWJuUXZjMlZ5ZG1salpTMWhZMk52ZFc1MExuVnBaQ0k2SWpCaU5UTmpNR0kzTFRSaE1HRXRNVEZsT1MxaU1tVmlMVEF3TWpGalkyUmhNalE0T0NJc0luTjFZaUk2SW5ONWMzUmxiVHB6WlhKMmFXTmxZV05qYjNWdWREcHJkV0psTFhONWMzUmxiVHByZFdKbFlXUnRNaUo5Lkk2MGhqTWJ4REhvZEpRT2JHWXZXdkVfUF9oVl9fbEg3OTR0Wi0wYnNmTXhQUEVUOVhFTGlYTzktZDg4NW1pcHRKdkl5UERnYmRSTWxVaE93TW42dXIxcGNqX0VhWU5yc2xOTmQybzJ0eFZMdHVOYVkydU9Yd1E4NHdMcU43Vnh6eTI1bmNhNlVNSERicDh2T3hXSDRLQlMtLTBBQjd0OUF0WHZGNl9YVzhxVVpOX2ZOYi1QTi1jQ2NDSWpxSUZTcDVYR1VkWWVCWm9aSTZNNE9jWUNCZk5HbDdGeEtmdkVGeDI0dUVweWE1WUt3WjRqeWoxSW16MEJuZGVEaFRMUlVBVWlxeU5VdjNJMFRZVDZpRHdOYXRZU0s2YXp0dHFSSTZfNWRVUFRmdlB1RmtnRkVRVnlVY3UyNEJqWGs2RkVTNnl2OXYySXN2UlY4N2tMMlE3aHJuQQ== | base64 --decode
+
+****VER O USUARIO****
+kubectl describe sa kubeadmin -n kube-system
+kubectl describe sa kubeadm -n kube-system
+||||||Name:                kubeadmin
+||||||Namespace:           kube-system
+||||||Labels:              <none>
+||||||Annotations:         <none>
+||||||Image pull secrets:  <none>
+||||||Mountable secrets:   kubeadmin-token-bw6ts
+||||||Tokens:              kubeadmin-token-bw6ts
+///////////////
+kubectl get serviceaccount -n kube-system
+kubectl get serviceaccount -n kube-system
+kubectl get serviceaccount -n kube-system
+kubectl get serviceaccount -n kube-system
+kubectl get clusterrolebinding -n kube-system
+
+kubectl get clusterrole -n kube-system
+
+////////////////
+kubectl create clusterrolebinding kubeadmin-binding --clusterrole=cluster-admin --serviceaccount=kube-system:kubeadmin
+kubectl create clusterrolebinding kubeadmin-binding2 --clusterrole=cluster-admin --serviceaccount=kube-system:kubeadm2
+
+
+||||||clusterrolebinding.rbac.authorization.k8s.io/kubeadmin-binding created
+
+kubectl get secret kubeadmin-token-5b6fw -n kube-system -o yaml |grep token:
+kubectl get secret kubeadm-token-gxcmd -n kube-system -o yaml |grep token:
+kubectl get secret kubeadm2-token-g4c8n -n kube-system -o yaml |grep token:
+///
+kubectl describe sa kubernetes-dashboard -n kube-system
+kubectl get secret kubernetes-dashboard-token-t99h8 -n kube-system -o yaml |grep token:
+
+
+||||||| token: ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbFlXUnRhVzR0ZEc5clpXNHRZbmMyZEhNaUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNXVZVzFsSWpvaWEzVmlaV0ZrYldsdUlpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WlhKMmFXTmxMV0ZqWTI5MWJuUXVkV2xrSWpvaVkySTBZakJpTldFdE5EVmxOQzB4TVdVNUxUazBPV0l0TURBeU1XTmpaR0V5TkRnNElpd2ljM1ZpSWpvaWMzbHpkR1Z0T25ObGNuWnBZMlZoWTJOdmRXNTBPbXQxWW1VdGMzbHpkR1Z0T210MVltVmhaRzFwYmlKOS5PamNSVkVQMXF6UkVxWFA3My1Bd19wWkM1M2FscUw0Z0ltZUNLSU5Pc0ZmV1YwRlVzME5iRWQzNzBLUTdZTEV1MFg5TVJsOURUWEFJM1BqOXFmN0MwS0VCQ096Y3QzQVAxdnQ2dlRMSGVmU0FPRW9HaEJCS2NrVVA1Ny12cHJUQzBjV1BISHJ6VGhzQnp0ZDRZTHVaeW9mQlRSVk9Kc1ZpRm1YdEpTeS1yOHZFRXQ0eGRGOFJjYnVQSjhEQXpOeWVDRUNaeFlReERGWEw0b2V6YlRvdjNPalhrQUQ3TVk4eThFSkpRSGRhaUk0MGdzekZnOXc0VElJLVZNaGpRbU1jbFExOEg5V25KczZFRS1SUE1DdkdwQjVCMW5HeGpSd3FuYWZWOW13NU5YLTdxcF84d3dqWEkwNGVCeVZILVIydXhnMmxaR3F4RExEbWU1ZTZsM3dVSmc=
+echo ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbFlXUnRhVzR0ZEc5clpXNHRZbmMyZEhNaUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNXVZVzFsSWpvaWEzVmlaV0ZrYldsdUlpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WlhKMmFXTmxMV0ZqWTI5MWJuUXVkV2xrSWpvaVkySTBZakJpTldFdE5EVmxOQzB4TVdVNUxUazBPV0l0TURBeU1XTmpaR0V5TkRnNElpd2ljM1ZpSWpvaWMzbHpkR1Z0T25ObGNuWnBZMlZoWTJOdmRXNTBPbXQxWW1VdGMzbHpkR1Z0T210MVltVmhaRzFwYmlKOS5PamNSVkVQMXF6UkVxWFA3My1Bd19wWkM1M2FscUw0Z0ltZUNLSU5Pc0ZmV1YwRlVzME5iRWQzNzBLUTdZTEV1MFg5TVJsOURUWEFJM1BqOXFmN0MwS0VCQ096Y3QzQVAxdnQ2dlRMSGVmU0FPRW9HaEJCS2NrVVA1Ny12cHJUQzBjV1BISHJ6VGhzQnp0ZDRZTHVaeW9mQlRSVk9Kc1ZpRm1YdEpTeS1yOHZFRXQ0eGRGOFJjYnVQSjhEQXpOeWVDRUNaeFlReERGWEw0b2V6YlRvdjNPalhrQUQ3TVk4eThFSkpRSGRhaUk0MGdzekZnOXc0VElJLVZNaGpRbU1jbFExOEg5V25KczZFRS1SUE1DdkdwQjVCMW5HeGpSd3FuYWZWOW13NU5YLTdxcF84d3dqWEkwNGVCeVZILVIydXhnMmxaR3F4RExEbWU1ZTZsM3dVSmc= | base64 --decode
+****o resultado na linha de baixo é o token final, cole no campo token no browser e autentique-se, ex:gerado****
+eyJhbGciOiJSUzI1NiIsImtpZCI6IiJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJrdWJlLXN5c3RlbSIsImt1YmVybmV0ZXMuaW8vc2VydmljZWFjY291bnQvc2VjcmV0Lm5hbWUiOiJrdWJlYWRtaW4tdG9rZW4tYnc2dHMiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoia3ViZWFkbWluIiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9zZXJ2aWNlLWFjY291bnQudWlkIjoiY2I0YjBiNWEtNDVlNC0xMWU5LTk0OWItMDAyMWNjZGEyNDg4Iiwic3ViIjoic3lzdGVtOnNlcnZpY2VhY2NvdW50Omt1YmUtc3lzdGVtOmt1YmVhZG1pbiJ9.OjcRVEP1qzREqXP73-Aw_pZC53alqL4gImeCKINOsFfWV0FUs0NbEd370KQ7YLEu0X9MRl9DTXAI3Pj9qf7C0KEBCOzct3AP1vt6vTLHefSAOEoGhBBKckUP57-vprTC0cWPHHrzThsBztd4YLuZyofBTRVOJsViFmXtJSy-r8vEEt4xdF8RcbuPJ8DAzNyeCECZxYQxDFXL4oezbTov3OjXkAD7MY8y8EJJQHdaiI40gszFg9w4TII-VMhjQmMclQ18H9WnJs6EE-RPMCvGpB5B1nGxjRwqnafV9mw5NX-7qp_8wwjXI04eByVH-R2uxg2lZGqxDLDme5e6l3wUJg
+
+echo ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbGNtNWxkR1Z6TFdSaGMyaGliMkZ5WkMxMGIydGxiaTEwT1Rsb09DSXNJbXQxWW1WeWJtVjBaWE11YVc4dmMyVnlkbWxqWldGalkyOTFiblF2YzJWeWRtbGpaUzFoWTJOdmRXNTBMbTVoYldVaU9pSnJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVnlkbWxqWlMxaFkyTnZkVzUwTG5WcFpDSTZJbVEwTWpZM05UZGlMVFJoTURrdE1URmxPUzFpTW1WaUxUQXdNakZqWTJSaE1qUTRPQ0lzSW5OMVlpSTZJbk41YzNSbGJUcHpaWEoyYVdObFlXTmpiM1Z1ZERwcmRXSmxMWE41YzNSbGJUcHJkV0psY201bGRHVnpMV1JoYzJoaWIyRnlaQ0o5LnBLZi1KN1FEQnFnMnpqakV1OFlpMHNqcnQ2WkItT3F5ZFlScE9vSWZaS0ZLVVNVVy11SnZYM0xTN2tlMUlPVE5hT3pUc2dEOUxlR1J1RUcyYUlHYUlvSkdBV3RmaEJMY1J5ZldtYmNneHhqVUVxcEt0UDVfTjNYbU53bTZOY0xHakItNnRtU2lyOHNLZXBjNUl6SEpyU2hnV1d3bUtxZ1p0V2xBSGRrMkNzNGRFV0h0SUtIYm5iZk84TEpuRFo3TkRZeThnZGowbmdYdUlZZ3l5RVRFTUs3MVJKNzJXVjZFVzIzaW55cGdzRVpwLXd5cGItMnJRWnV4Nk5hY210ZmRfNXAxdmdFQ1JxY2VuWlVjS1dBcXNJbkNOM3ZMT3hjakFNdlpwT0l3V0JHRlNNYXJmLUpBQnhyOXFkVHE0MmZ3NW5uLWZWaFlWczBmZUZuYndmT3l5Zw==| base64 --decode
+
+echo ZXlKaGJHY2lPaUpTVXpJMU5pSXNJbXRwWkNJNklpSjkuZXlKcGMzTWlPaUpyZFdKbGNtNWxkR1Z6TDNObGNuWnBZMlZoWTJOdmRXNTBJaXdpYTNWaVpYSnVaWFJsY3k1cGJ5OXpaWEoyYVdObFlXTmpiM1Z1ZEM5dVlXMWxjM0JoWTJVaU9pSnJkV0psTFhONWMzUmxiU0lzSW10MVltVnlibVYwWlhNdWFXOHZjMlZ5ZG1salpXRmpZMjkxYm5RdmMyVmpjbVYwTG01aGJXVWlPaUpyZFdKbFlXUnRhVzR0ZEc5clpXNHROV0kyWm5jaUxDSnJkV0psY201bGRHVnpMbWx2TDNObGNuWnBZMlZoWTJOdmRXNTBMM05sY25acFkyVXRZV05qYjNWdWRDNXVZVzFsSWpvaWEzVmlaV0ZrYldsdUlpd2lhM1ZpWlhKdVpYUmxjeTVwYnk5elpYSjJhV05sWVdOamIzVnVkQzl6WlhKMmFXTmxMV0ZqWTI5MWJuUXVkV2xrSWpvaU9XTXdaRFEyT1RFdE5EbGxOaTB4TVdVNUxXSmpaREl0TURBeU1XTmpaR0V5TkRnNElpd2ljM1ZpSWpvaWMzbHpkR1Z0T25ObGNuWnBZMlZoWTJOdmRXNTBPbXQxWW1VdGMzbHpkR1Z0T210MVltVmhaRzFwYmlKOS5qb2UyVlI3TkkydVpRRVZ3Rm4tTDY0NGxpV3ZVcTJXbjNIWndzQVBuUS1ibzRYOWVPV0pHWEp1N0d6RzJTbkowSVJIVFZqOEptclc0ZmxWN0xXd0N3bzNzVWZnRFp1SVhqSTlMVE5SalpLQXFZN0Y5SlM5NER6M1M3UzJHVER6TTdZYkFmb29aM1hLeVlHN1pTR2FqejBRS1ptZ19rbUM5Nmt0QmFpbF9tN044MERwTktDOVVuQWFRUjhZRWdjeEVNYldtVVJGODJHelBJaUVSMzVUVklxSDBrSTlISXhkVHRJZ0RuUjJNWnpFdENoZDVyVkFHWkgxYUhqSUhCSi05N2R5aDBJam9lNDd4dVVDTnEtVWtFRWlZZ29hZThDZWJnMHRvWVNxblE0Mk1PV0JyWTNJekNQUmtQdkh3NEpoWFgybndGRGFjblBsX1dvRDJKbEg4eEE=| base64 --decode
+
+
+kubectl get ns
+kubectl apply -f ns.yaml
+////////
+docs
+***serviço-https://kubernetes.io/docs/concepts/services-networking/service/
+--env
+docker container run -d --env VARIAVEL_AMBIENTE=VALOR --env VARIAVEL_AMBIENTE2=VALOR2 image
+//////
+kubectl cluster-info
+
+
+
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+cloud native - org 
+aplicação graduada 
+encubados
+desativar swap ubuntu
+swapoff -a 
+swapon -a
+======================================================================================================
+(Event Sourcing, Saga, CQRS, BFF, etc...)
+/////////////////////////////////////////////
+apt  install htop
+
+/////////////////////////////////////////////
+
+cloud native
+
+///////docker-compose////////////////////////////////
+curl -L "https://github.com/docker/compose/releases/download/1.23.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
+cd ../../../../../ && namo docker-compose.yaml
+docker-compose up -d
+/////escalando///////
+docker-compose scale frontend=5
+////
+docker-compose ps
+docker-compose logs
+docker-compose logs |grep front
+
+
+//////
+docker login
+/////
+docker run -p -p 80:80 frontend-redesocial:1.0.0
+////
+docker build -t frontend-redesocial:1.0.0 .
+///p o push
+cd /cursoDevOps/frontend
+docker build -t tjca1/frontend-redesocial:1.0.0 .
+cd /cursoDevOps/backend-user
+docker build -t tjca1/backend-user:1.0.0 .
+cd /cursoDevOps/backend-scm
+docker build -t tjca1/backend-scm:1.0.0 .
+/////////////push/////////
+docker push tjca1/frontend-redesocial:1.0.0
+docker push tjca1/backend-user:1.0.0
+docker push tjca1/backend-scm:1.0.0
+ll
+
+
+
+////
+docker run -d -p 3020:3020 backend-user:1.0.0
+docker run backend-user:1.0.0
+////
+docker build -t backend-scm:1.0.0 .
+docker build -t tjca1/frontend-redesocial .
+////
+docker run -d -p 3030:3030 backend-scm:1.0.0
+///deleta images///
+docker rmi 
+saber qual o usuario vc esta
+whoami
+/// SCM - source code manager
+//////////////////////////////////////////////////////////////////////////////
+https://downloads.mongodb.org/linux/mongodb-shell-linux-x86_64-ubuntu1804-4.0.6.tgz
+
+mongodb+srv://tjca1:<password>@cluster0-9jbbe.mongodb.net/test?retryWrites=true
+//////////////////////////////////////////////////////////////
+Bootcamp: Microserviços, Docker, Kubernetes, Jenkins e Helm
+////////////////////////////////////////////////////////////////
+https://github.com/hedza06/spring-boot-docker/tree/master/src/main/resources/liquibase/migrations
+////////////////
+docker container ps -a | grep
+docker images |grep maven
+ 
+ docker run -d --name container_java_maven -p 8080:8080 -v /var/app 9997d8483b2f
+///////////
+apt-get update
+docker run -it --rm --name maven-c -v "$(pwd)":/usr/src/mymaven -w /usr/src/mymaven maven:3.3-jdk-8 mvn clean install
+
+///////Z:\root\java_maven_c//////////subindo imagen maven no docker e mapeando volume p jogar projetos maven/////////////////////////////////////////////////////////////////////
+docker build . --tag tjca1/java_maven_c:1.0.0
+docker container run -d --name java_maven_c -v "$(pwd)":/usr/src/mymaven -p 82:82 tjca1/java_maven_c:1.0.0
+docker container exec -it java_maven_c /bin/bash
+/////
+root@d1f3bbb73d4e:/usr/src/mymaven/spring-boot-docker-master/target# java -jar docker-0.0.1-SNAPSHOT.jar
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+============_Cloud Computing_=======================================
+GCP
+https://cloud.google.com
+thiagojosecorreiaaraujo@gmail.com
+
+=================_react_plugins_extensions_==================================================
+React Developer Tools
+React Developer Tools
+fire-fox CORS Everywhere
+chrome - chrome web store
+////
+apt install xrdp xfce4 xfce4-goodies tightvncserver
+echo xfce4-session> /home/ubuntu/.xsession
+cp /home/ubuntu/.xsession etc/skel
+sed -i '0,/-1/s//ask-1/' /etc/xrdp/xrdp.ini
+service xrdp restart
+sed -i '0,/ask-1/s//-1/' /etc/xrdp/xrdp.ini
+
+
+
+
+===================================================================
+
+=================
+npm init -y
+npm i --save -E body-parser@1.15.2 
+npm i --save -E express@4.14.0 
+npm i --save -E express-query-int@1.0.1 
+npm i --save -E mongoose@4.7.0 
+npm i --save -E node-restful@0.2.5 
+npm i --save -E lodash@4.17.4 
+npm i --save -E pm2@2.1.5 
+npm i --save -E mongoose-paginate@5.0.3
+cls
+npm i --save-dev nodemon@1.11.0
+=========bPoints===============================
+/api/tesouraria      	get  - consulta todos os siclos
+/api/tesouraria/1        get  - consulta os ciclos por id 
+/api/tesouraria          post - cria um novo ciclo
+/api/tesouraria/2        put  - altera o ciclo
+/api/tesouraria/3        delete - remove o ciclo
+/api/tesouraria/count    get - consulta a qtdd de ciclo
+/api/tesouraria/summary   get - consulta o Sumario do ciclo
+///////////////////////////////////////////////////
+//////////////////////////////////////////////////
+
+==========================================================================================================
+echo "# BackNode ! bata !" >> README.md
+git add .
+git commit -m "1o Commit"
+git push
+git status
+///////////nova branch/////////////////////
+git pull
+git checkout -b branch_padrao
+git push origin branch_padrao
+git branch -a
+git checkout master
+git status
+
+
+
+==================_docker_================================================================================
+docker container ps -a
+***remover
+docker rm id_ou_apelido
+****infos
+docker inspect id_ou_apelido
+****commit
+docker commit ID/apelido nome_da_nova_imagem
+
+======================_SSH_================================================================================
+
+======================_SSH_================================================================================
+apt install ssh
+////
+ir no C:\Users\tjca1\.ssh
+e colar os arquivos
+authorized_key
+known_hosts
+que estão o E:\bkUbuntu\root\.ssh
+ir no \etc\ssh no linux e colar os 
+authorized_key
+known_hosts
+sshd_config
+ddepois 
+systemctl restart ssh
+
+===============_backEnd_=================================================================================
+npm i --save -E body-parser@1.15.2 
+npm i --save -E express@4.14.0 
+npm i --save -E express-query-int@1.0.1 
+npm i --save -E mongoose@4.7.0 
+npm i --save -E node-restful@0.2.5 
+npm i --save -E lodash@4.17.4 
+npm i --save -E pm2@2.1.5 
+npm i --save -E mongoose-paginate@5.0.3
+npm i --save -E  
+
+
+npm i --save --save-dev -E nodemon@1.11.0
+//////mongo no docker//////////
+docker container start -ai e04f1090008b
+///
+docker pull mongo:4.1.8
+docker container run --name mongo_para_node -d -p 27017:27017 -p 28017:28017 -e MONGO_INITDB_ROOT_USERNAME=mongo  -e MONGO_INITDB_ROOT_PASSWORD=mongo mongo:4.1.8
+docker container start -ai mongo_para_node
+docker container stop mongo_para_node
+docker exec -it mongo_para_node bash
+//////subir para prod////////
+npm run production
+///ver status////
+call node_modules\.bin\pm2 status
+///monitorar a app////
+call node_modules\.bin\pm2 monit
+===============_frontEnd_=================================================================================
+echo ///sobi o servidor para testes da aplicação////////////////////////////////////////////////////////////////
+npm i --save-dev webpack@1.14.0 
+npm i --save-dev webpack-dev-server@1.16.2
+echo ///faz o transpale do jsx para javascript nativo para que o browser consiga ler os fontes babel////////////
+npm i --save-dev babel-core@6.22.1 
+npm i --save-dev babel-loader@6.2.10 
+npm i --save-dev babel-plugin-react-html-attrs@2.0.0 
+npm i --save-dev babel-plugin-transform-object-rest-spread@6.22.0
+npm i --save-dev babel-preset-es2015@6.22.0 
+npm i --save-dev babel-preset-react@6.22.0
+echo////carregar css na app//////////////////////////////////////////////////////////////////////////////////////
+npm i --save-dev extract-text-webpack-plugin@1.0.1
+npm i --save-dev style-loader@0.13.1 
+npm i --save-dev css-loader@0.26.1
+echo////carregar imgs e fonts na app//////////////////////////////////////////////////////////////////////////////
+npm i --save-dev file-loader@0.9.0
+echo////aparencia app themas//////////////////////////////////////////////////////////////////////////////////////
+npm i --save-dev bootstrap@3.3.7
+npm i --save-dev font-awesome@4.7.0
+echo////React//////////////////////////////////////////////////////////////////////////////////////////////////////
+npm i --save-dev react@15.4.2
+npm i --save-dev react-dom@15.4.2
+npm i --save-dev react-router@3.0.2
+echo////Chamadas http-ajax-promeses/////////////////////////////////////////////////////////////////////////////////
+npm i --save-dev axios@0.15.3
+echo////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////
+docker container run --name bd_mysql -e MYSQL_ROOT_PASSAWORD=mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=mysql -e MYSQL_RANDOM_ROOT_PASSWORD=mysql  -e MYSQL_DATABASE=base_de_dados -p 3306:3306 mysql:5.5
+///depois que vc statartar o container va no log e pegue a senha !!!!!!/////////////////
+GENERATED ROOT PASSWORD: Xalah8thethud4jeeTaiko9ahzohghoo
+
+
+////////////////////////////////
+docker attach
+ babel-core@6.22.1 
+ babel-loader@6.2.10 
+ babel-plugin-react-html-attrs@2.0.0 
+ babel-plugin-transform-object-rest-spread@6.22.0
+ babel-preset-es2015@6.22.0 
+ babel-preset-react@6.22.0
+===============_react_=================================================================================
+npm i --save-dev webpack@1.14.0 webpack-dev-server@1.16.2
+npm i --save-dev babel-core@6.22.1 babel-loader@6.2.10 babel-preset-es2015@6.22.0
+npm i --save-dev babel-plugin-transform-object-rest-spread@6.22.0
+npm i --save-dev react@15.4.2
+npm i --save-dev extract-text-webpack-plugin@1.0.1 style-loader@0.13.1 css-loader@0.26.1
+npm i --save-dev babel-preset-react@6.22.0
+./node_modules/.bin/webpack
+//////////////////////////////////////
+echo "# rascunho-react" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin https://github.com/tjca1/rascunho-react.git
+git push -u origin master
+////
+npm i --save-dev react@15.4.2 react-dom@15.4.2 babel-core@6.22.1 babel-loader@6.2.10 babel-preset-es2015@6.22.0 webpack@1.14.0 webpack-dev-server@1.16.2
+===============_fechar_porta_====_porta_===============================================================
+netstat -a -n -o | findstr :7777
+taskKill.exe /F /PID 6676
+
+=======================_angular2_======================================================================
+Dart = typeScript
+////////instalação/////////
+nodeJs
+  node -v
+npm install -g @angular/cli
+	ng --version
+//////instalação typescript////
+npm install typescript -g
+tsc --version
+///compilar 1 arquivo///
+tsc app.ts
+// compilar monitorando //
+tsc -w
+///////executar arquivo js ////////
+node arquivo.js 
+node arquivo
+///////
+
+
+===========================_jpa_=================================================================================================================
+A tag exclude-unlisted-classes configurada dentro no arquivo persistem.xml varre minhes entidades e cria as tabelas no banco com o valor false
+
+A propreiedade com o name 'hibernate.hbm2ddl.auto' com a valor updade atualiza o banco / create recria tudo / none faz nada
+
+
+fetch = FetchType.LAZY
+fetch = FetchType.EAGER
+cascade = CascadeType.ALL
+
+@OneToMany ou @ManyToMany vai buscar as informações so quando os metodos gets da entidade forem acionados
+fetch = FetchType.LAZY
+aaaaaaaaa\
+
+CascadeType.ALL = Realiza todas as operações em cascata
+CascadeType.DETACH = Realiza a operação detach em cascata
+CascadeType.MERGE = Realiza a operação merge em cascata
+CascadeType.PERSIST = Realiza a operação persist em cascata
+CascadeType.REFRESH = Realiza a operação refresh em cascata
+CascadeType.REMOVE = Realiza a operação remove em cascata
+https://www.youtube.com/watch?v=7C6HrrOYfpU
+
+==========================================================================================================================================================
+//////////
+*ArrayList – é como um array cujo tamanho pode crescer. A busca de um elemento é rápida, mas inserções e exclusões não são. Podemos afirmar que as inserções e exclusões são lineares, o tempo cresce com o aumento do tamanho da estrutura. Esta implementação é preferível quando se deseja acesso mais rápido aos elementos. Por exemplo, se você quiser criar um catálogo com os livros de sua biblioteca pessoal e cada obra inserida receber um número sequencial (que será usado para acesso) a partir de zero;
+//////////
+*LinkedList – implementa uma lista ligada, ou seja, cada nó contém o dado e uma referência para o próximo nó. Ao contrário do ArrayList, a busca é linear e inserções e exclusões são rápidas. Portanto, prefira LinkedList quando a aplicação exigir grande quantidade de inserções e exclusões. Um pequeno sistema para gerenciar suas compras mensais de supermercado pode ser uma boa aplicação, dada a necessidade de constantes inclusões e exclusões de produtos;
+/////////
+*HashSet – o acesso aos dados é mais rápido que em um TreeSet, mas nada garante que os dados estarão ordenados. Escolha este conjunto quando a solução exigir elementos únicos e a ordem não for importante. Poderíamos usar esta implementação para criar um catálogo pessoal das canções da nossa discografia;
+//////////
+*TreeSet – os dados são classificados, mas o acesso é mais lento que em um HashSet. Se a necessidade for um conjunto com elementos não duplicados e acesso em ordem natural, prefira o TreeSet. É recomendado utilizar esta coleção para as mesmas aplicações de HashSet, com a vantagem dos objetos estarem em ordem natural;
+/////////
+*LinkedHashSet – é derivada de HashSet, mas mantém uma lista duplamente ligada através de seus itens. Seus elementos são iterados na ordem em que foram inseridos. Opcionalmente é possível criar um LinkedHashSet que seja percorrido na ordem em que os elementos foram acessados na última iteração. Poderíamos usar esta implementação para registrar a chegada dos corredores de uma maratona;
+/////////
+*HashMap – baseada em tabela de espalhamento, permite chaves e valores null. Não existe garantia que os dados ficarão ordenados. Escolha esta implementação se a ordenação não for importante e desejar uma estrutura onde seja necessário um ID (identificador). Um exemplo de aplicação é o catálogo da biblioteca pessoal, onde a chave poderia ser o ISBN (International Standard Book Number);
+//////////
+*TreeMap – implementa a interface SortedMap. Há garantia que o mapa estará classificado em ordem ascendente das chaves. Mas existe a opção de especificar uma ordem diferente. Use esta implementação para um mapa ordenado. Aplicação semelhante a HashMap, com a diferença que TreeMap perde no quesito desempenho;
+//////////
+*LinkedHashMap – mantém uma lista duplamente ligada através de seus itens. A ordem de iteração é a ordem em que as chaves são inseridas no mapa. Se for necessário um mapa onde os elementos são iterados na ordem em que foram inseridos, use esta implementação. O registro dos corredores de uma maratona, onde a chave seria o número que cada um recebe no ato da inscrição, é um exemplo de aplicação desta coleção.
+//////////
+
+
+
+**** Facade - Oferece uma interface unificada para um conjunto de objetos que consistem um subsistema, definindo uma interface de alto nível que facilita no uso.
+////////////////////////
+**** Adapter - A ação desse padrão converte a interface de uma classe em outra, esperada pelo objeto cliente. Através dessa conversão, permite que classes com incompatibilidade de interfaces, consigam serem adaptadas para que outros objetos possam trabalhar juntos.
+///////////////////////
+**** Singleton - Usado quando desejado, que uma classe tenha apenas uma instância na aplicação. Abaixo, mostra alguns aspectos que devem serem cuidados ao criar esse padrão.
+////////////
+
+
+================================================================
+List: Lista de coisas;
+Set: Lista de coisas sem repetição;
+Map: Lista com chave-valor, sendo que a chave deve ser única; e
+Queue: Fila.
+
+
+
+================_jsf_========================================================================================
+https://www.youtube.com/watch?v=XScxWSPs8lQ&list=PLnOrFdw5rkTyj3km618OLh5nCatSELRFh&index=13
+
+
+
+
+
+========================================================================================================
+
+Email : samuel@tecnoware4i.com.br 
+Assunto a ser colocado no email : apinfo - 39060 - 
+
+
+Bom dia,
+Segue meu cv atualizado.
+Pretensão 80h – PJ.
+
+
+
+==============================================================================================
+FATURAMENTO 
+ATA ELEIÇÃO DIRETORIA 
+REQUERIMENTO EMPRESÁRIO INDIVIDUAL 
+FICHA CADASTRAL ASSINADA
+
+==============================================================================================
+
+vferreira@vectoritcgroup.com
+fribeiro@vectoritcgroup.com
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Essa oportunidade é para uma empresa de grande porte na região da zona sul de São Paulo,
+com a modalidade de contratação PJ ou Cooperativa. 
+Caso o seu perfil seja compatível com a vaga, enviaremos o seu currículo atualizado para avaliação.
+Desenvolvedor Back-End Java Sênior – 3 vagas
+Atividades:
+Responsável por implementar e manter o backend da aplicação de 
+Chatbot (Orquestrador) e 
+curadoria, 
+além da integração com outros sistemas através de Web Services.
+
+chetbot
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+Requisitos:
+
+Experiência com Springboot, Postgres, Redis, Chatbot e desenvolvimento usando containers (Docker).
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+==============================_eletropaulo_====================================
+n instalaça~:73402915
+https://portalhome.eneldistribuicaosp.com.br/#/segunda-via
+
+
+
+
+Entrevista Thiago
+Qua 19/12/2018 14:30 – 15:00
+https://zoom.us/j/4601985398?
+https://zoom.us/j/4601985398
+chatFlow
+ibm cloud
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////
+https://br.linkedin.com/in/thiago-araujo-30353638
+https://www.youtube.com/watch?v=uozllcPIWAo
+
+======================================================================================================
+* https://www.youtube.com/watch?v=cfOM8SzVKzo&list=PL12CyjSxUepq4Hz9RqUYZ1JUB4JfKEXgk&index=135 
+
+https://www.youtube.com/watch?v=GiwGQGIix7U&index=130&list=PL12CyjSxUepq4Hz9RqUYZ1JUB4JfKEXgk
+https://www.youtube.com/watch?v=OMOGaugKpzs&list=PL12CyjSxUepq4Hz9RqUYZ1JUB4JfKEXgk&index=89
+https://www.youtube.com/watch?v=Ew7Zkkucos8&index=81&list=PL12CyjSxUepq4Hz9RqUYZ1JUB4JfKEXgk
+https://www.youtube.com/watch?v=lxTt5QmPSqI&index=40&list=PL12CyjSxUepq4Hz9RqUYZ1JUB4JfKEXgk
+https://www.youtube.com/watch?v=PmcFuaLvZJ4&index=31&list=PL12CyjSxUepq4Hz9RqUYZ1JUB4JfKEXgk
+//////////////////////////////////////////////////////////
+191.136.14.32
+///////////////////////////////////////////////////////
+chip tim 
+1135263389
+1198845084
+www.tim.com.br
+201812622642
+////////////////////////////////
+11 970550449
+
+=====================_nexus======================================================================================
+https://github.com/placerda?tab=repositories
+======================================================================================================================
+///////////////////////////////////////////////////////
+tjcorreia@ext.vectoritcgroup.com
+TJA@Vec!
+////////////////////////////////////////////////////
+vferreira@vectoritcgroup.com
+
+Cadastro SB
+Conhecimento PLD
+Termo de Sigilo Banco Santander Brasil
+Termo de Sigilo Zurich Santander
+Cópia CTPS, pág com foto, dados pessoais e registro
+////////////////nginx//////////////////////////////////////////////////////////////////
+sudo apt-get update
+sudo apt-get install nginx
+sudo ufw allow 'Nginx HTTP'
+//edit default port 81
+vi /etc/nginx/sites-enabled/default
+//
+systemctl status nginx
+//
+systemctl restart nginx
+// deploy //
+ng build --prod
+////////////////
+
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////
+https://www.youtube.com/watch?v=vAAtRk1CStQ
+
+//////////////////////////////////////////////////////////////////////////////////////
+https://www.youtube.com/watch?v=YYP6FBs3NrI
+==========================================================================================
+Fabrica.09620652
+Erasure - A Little Respect (Official Video)
+/////////////////////////////////////////////////////////////////////////////////////////////
+vpn.santander.com.br/
+///////////////////////////////////////////////////////////////////////////////////////////
+https://www2.dataprev.gov.br/sabiweb/agendamento/inicio.view#sabiweb
+////////////////////////////////////////////////////////////////////////////////////
+Business integration
+///////////////////////////////////////////////////////////////
+iid_v85_1_of_3
+////////////////////////////////////////////////////////////////
+http://www.filesearching.com/
+//////////////////////////////////////////////
+https://publib.boulder.ibm.com/bpcsamp/v7r5/externalconnections/5724N42FTPV75/download.html
+/////////////////////////////////////////////////////////////////////
+http://www.global-techhub.com/2017/09/installing-ibm-integration-designer-v857.html
+/////////////////////////////////////////////////////////////////////
+ibm integration Designer 
+/////////////////////////////////////////////////////////////////////
+https://www2.dataprev.gov.br/sabiweb/agendamento/inicio.view#sabiweb
+PR
+https://www.google.com.br/url?sa=t&rct=j&q=&esrc=s&source=web&cd=3&ved=2ahUKEwiszoLI8preAhVF61MKHXz2CdIQFjACegQIBxAB&url=https%3A%2F%2Fwww2.dataprev.gov.br%2Fsabiweb%2Fpppr%2Finicio.view&usg=AOvVaw0QuaGz5siBdtAL4zND4i3d
+******curso JENKINS**********************************************************************************************
+docker build . --tag tjca1/jenkins:0.1.0
+docker push tjca1/jenkins:0.2.0
+///////////////////////
+docker container run --name docker-jenkins-3 -p 80:8080 -v jenkins_home_3:/var/jenkins_home -v jenkins_backup_3:/srv/backup tjca1/jenkins:0.3.0
+docker container run --name docker-jenkins-4 -p 80:8080 -v jenkins_home_4:/var/jenkins_home -v jenkins_backup_4:/srv/backup tjca1/jenkins:0.4.0
+docker container inspect | grep backup
+docker container inspect docker-jenkins-3 | grep back
+//////////////////
+https://macwinkey.com/intellij-idea-crack-license-key/
+https://pje.trtsp.jus.br/primeirograu/Processo/ConsultaDocumento/listView.seam
+
+////////////////////////////////////////////////
+DNS TIM
+189.40.198.80
+189.40.198.81
+///////////////////////////////////////////////
+Oracle9i JDevelop install Guide (jdev\)
+
+https://zoom.us/j/7974270509
+
+
+Orquetrador de container.
+
+_be
+6258616163
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+18101612474457100000120548946
+18101612474457100000120548946
+////////////////////////////////
+(11)96550-1919
+(11)4171-0607
+98625-7490
+/////////////////////////////////
+THARA203
+https://registro.br/2/login?timeout=1
+///////////////////////////////////
+https://cpanel.sdevops.com.br.wph
+/////////////////////////////////
+Master: wns110.hostgator.com.br
+Slave 1: wns111.hostgator.com.br
+////
+sdevopsc
+///
+
+C:/Program Files/Java/jdk1.8.0_161/bin/javaw.exe
+-vmargs
+-Dosgi.requiredJavaVersion=1.8
+--add-modules=ALL-SYSTEM
+-Xms40m
+-Dosgi.module.lock.timeout=10
+-Dorg.eclipse.swt.browser.IEVersion=10001
+-Xmx1200m
+
+/////////////////
+https://www.hostgator.com.br/
+/////////////////////////////////
+Essa conta permite acessar os arquivos do seu site via cliente de FTP (saiba mais).
+Hostname: sdevops.com.br
+Hostname temporário: wp110.hostgator.com.br 
+Porta: 21
+Login: ftpuser@sdevops.com.br
+
+C:\IBM\WebSphere\AppServer\bin\stopServer.bat server1
+
+96.125.163.110
+Master: wns110.hostgator.com.br
+Slave 1: wns111.hostgator.com.br
+
+310171080
+
+R192042974
+B6250724323
+
+100124991 2018 5020701
+
+1001144-45.2018.5.02.0045
+10011444520185020045
+
+https://consulta.pje.trtsp.jus.br/consultaprocessual/pages/consultas/ConsultaProcessual.seam
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////
+cd C:\minishift
+minishift.exe start --vm-driver virtualbox
+****************************************************************************************************
+****************************************************************************************************
+****************************************************************************************************
+****************************************************************************************************
+
+******CURSO DOCKER**********************************************************************************************
+VI:
+esc cancela comando 
+insert insere
+depois do esc, q! sair sem salvar / wq sai salva.
+******************************************************************
+//JAVA////////////////////////////////////////////////////////////
+apt-get update 
+apt-get install default-jre
+apt-get install default-jdk
+add-apt-repository ppa:webupd8team/java
+apt-get update
+apt install openjdk-8-jdk
+install oracle-java9-installer
+update-alternatives --config java
+update-alternatives --config command
+Overlay Network
+docker network ls
+k8s
+/////////////////////OPENSHIFIT//////////////////////////////////////////////////////////
+sudo usermod -aG docker $USER
+///////////
+wget https://github.com/openshift/origin/releases/download/v3.9.0/openshift-origin-client-tools-v3.9.0-191fece-linux-64bit.tar.gz
+//////////
+tar -zvxf openshift-origin-client-tools-v3.9.0-191fece-linux-64bit.tar.gz
+/////////
+cd openshift-origin-client-tools-v3.9.0-191fece-linux-64bit
+sudo cp oc /usr/local/bin/
+//////////
+oc version
+///////////
+oc v3.9.0+191fece
+kubernetes v1.9.1+a0ce1bc657
+features: Basic-Auth GSSAPI Kerberos SPNEGO
+////////////
+sudo su -
+cat << EOF > /etc/docker/daemon.json 
+{
+    "insecure-registries" : [ "192.168.1.0/16" ]
+}
+EOF
+/////////////
+service docker restart
+/////////////
+"172.17.0.0/16"
+sudo su -
+cat << EOF > /etc/docker/daemon.json 
+{
+    "insecure-registries" : [ "172.30.0.0/16" ]
+}
+EOF
+////////PROBLEMAS ???? EXEC//////////////
+sudo systemctl daemon-reload
+sudo systemctl restart docker
+///////////////////////////
+oc cluster up --routing-suffix=<your public ubuntu IP address>.xip.io --public-hostname=<your ubuntu public DNS>
+oc cluster up --routing-suffix=192.168.1.4.xip.io --public-hostname=linux
+//////////////////////////////////////////////////////////////////////////////////////////////
+The server is accessible via web console at:
+    https://linux:8443
+
+You are logged in as:
+    User:     developer
+    Password: <any value>
+
+To login as administrator:
+    oc login -u system:admin
+///////////////////////tudo certo !!!!!/////////////////////////////////////////////////////
+oc login -u system:Administrator
+oc get projects
+oc get users
+////////////
+oc adm policy add-cluster-role-to-user cluster-admin Administrator
+oc adm policy add-cluster-role-to-user cluster-admin aa
+//////////CRIAR USUARIO UBUNTU/////////////////////////////
+adduser open
+
+oc label user/open level=gold
+//////////////////////////////////////////////////
+uname -mrs
+dmesg | head -1
+cat /etc/os-release
+///////////////////////////////////////////////
+oc get pods -o wide
+/////////////////////////////////////////////////
+oc new-app -S nome_projeto_exite
+oc new-build https://github.com/tjca1/jenkins-v-teste.git --name jenkins-v-teste:1.0
+docker tag myimage registry/myproject/jenkins-v-teste:tag
+docker push registry/myproject/jenkins-v-teste:tag
+///////////////////////
+$ oc new-build \
+  -D $'FROM centos:7\nRUN yum install -y httpd' \
+  --name=mybuild \
+  --to=openshift/httpd:latest
+
+////network////NETWORK/////////////////////////////////////////////////////////
+docker container run --rm alpine ash -c 'ifconfig'
+docker container run --rm --net none alpine ash -c 'ifconfig'
+///
+docker network inspect host
+docker network inspect bridge
+///////
+docker container run --name container3 -d --net host alpine sleep 1000
+docker container run --name container1 -d --net bridge alpine sleep 1000
+///////
+docker network create --driver bridge rede_nova
+docker network rm rede_nova
+///
+docker network  connect bridge container3
+docker network  disconnect bridge container3
+
+cb3bf9387f95
+
+/////////////////////////////////////////////////////////////////
+sudo apt-get update
+sudo apt-get install vim
+///////////////////////////////////
+vi /etc/ssh/sshd_config
+PermitRootLogin yes
+PasswordAuthentication yes
+service ssh restart
+***************DOCKER LOGIN******************************************
+docler image tag cpy ex-python:1.0 
+docker login --username=tjca1
+
+***********NPM********************************************************
+npm i --save express@4.15.3 mongoose@4.11.1 node-restful@0.2.6 body-parser@1.17.2 cors@2.8.3
+
+*********************************************************************
+docker-compose up -d
+docker-compose ps
+docker-compose down
+docker-compose logs -f -t
+docker-compose up -d --scale container=3
+**********************************************************************
+
+ssh:ubuntu:
+sudo apt-get install ssh
+sudo apt-get install nmap
+nmap hotname
+service ssh restart
+//////////////////////////
+sudo apt-get update
+/////////////////////////
+sudo apt-get install \
+    apt-transport-https \
+    ca-certificates \
+    curl \
+    software-properties-common
+///////////////////////////
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+///////////////////////////
+sudo add-apt-repository \
+   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+///////////////////////////
+sudo apt-get update
+///////////////////////////
+sudo apt-get install docker-ce
+//////////////////////////////////////////
+ALGUNS COMANDOS DOCKER
+//////////////////////////////////////////
+docker ps -a
+docker container run --name meu_debian -it debian bash
+docker container start -ai meu_debian
+touch thiago.txt
+//////////////////////////////////////////
+docker container run -p 9999:80 -v $(pwd):/usr/share/nginx/html nginx
+docker container run -p 9999:80 -d nginx
+//////////////////////////////////////////
+docker container run -p 50:22 --name meu_ubuntu -it ubuntu bash
+//////////////////////////////////////////
+docker container logs meu_ubuntu
+docker container inspect meu_ubuntu
+//////////////////////////////////////////////////////
+docker container exec meu_ubuntu vi /etc/ssh/sshd_config
+//////////////////////////////////////////////////////
+docker container exec meu_ubuntu service ssh restart
+////////////////////////////////////////////////////////
+docker rmi nome_imagem
+docker rm nome_container
+////////////////////////////////////////////////////////////
+docker image pull regis:latest
+docker image ls 
+docker image tag ubuntu:latest ubuntu:1.0
+///////////EXCLUIR IMAGE//////////////////////////////////////
+docker image rm -f nginx
+//////////////////////////////////////////////////////////////
+docker image build -t buld1 .
+//////////CRIANDO VARIAVEL DE AMBIENTE LINUX///////////////////
+export T="THIAGO"
+echo $T
+///////////////////////////////////////////////////////////////
+docker image inspect --format="{{index .Config.Labels \"maintainer\"}}" build_3
+docker image inspect --format="{{index .Config.Image }}" build_3
+///////////////////////////////////////////////////////////////////
+docker exec -i -t container1 /bin/bash
+
+docker exec -i -t base-myproject.192.168.1.3.xip.io /bin/bash ip addr
+base-myproject.192.168.1.3.xip.io
+****************************************************************************************************************
+
+6209-1/00 SUPORTE TECNICO, MANUTENÇÃO E OUTROS SERVIÇOS EM TECNOLOGIA DA INFORMAÇÃO
+*****************************************************************************************************************
+
+======================_pizza_=====================================================================================
+bela fiori
+5894-6748
+5515-1717
+***********
+kiki
+5514-0778
+
+
+fixo
+4171-0607
+
+
+--------------------------------------------------------------------------------------------------------------
+
+https://click.pstmrk.it/2sm/www.hackerrank.com%2Ftests%1F3210gad77lh%2Flogin%3Fb%3DeyJ1c2VybmFtZSI6InRqY2ExQGhvdG1haWwuY29tIiwicGFzc3dvcmQiOiI3ZGY1ZThlZCIsImhpZGUiOnRydWV9/A0EskQE/EDcI/Fwv23stsx-/aHJ3LXRlc3QtaW52aXRl
+
+////////////////////////////////////////////
+out
+12/out
+
+Desenvolvedor java
+
+Boa tarde,
+Segue meu cv atualizado. 
+Pretensão 80h – PJ.
+CTL 10.000,00 + Beneficios.
+Inicio imediato.
+
+
+Boa tarde,
+Segue meu cv atualizado para vaga apinfo - 28645 - Java Junior 
+Pretensão 70h – PJ.
+
+Bom dia,
+Segue meu cv atualizado para vaga apinfo - 29766 - ANPR-JAVA 
+Pretensão 70h – PJ.
+
+
+
+rua mmdc, 18 
+
+////////////////////////////////////////////
+SELECT s.ID_SEGURADO as 'codigo', 
+s.ID_SEGURADO as 'codigo',
+s.ID_SEGURADO as 'codigo'
+FROM portal_db.segurado s inner join 
+portal_db.reebolso r on s.ID_SEGURADO = r.id_reembolso
+where r.status = 'abe'
+
+/////////////////////////////////////////////
+select distinct s.id_segurado as 'codigo', 
+s.nome_segurado as 'nome',
+s.data_nascimento as 'data de nascimento',
+s.email as 'e-mail,'
+from portal_db.segurado s inner join 
+portal_db.reebolso r on s.id_segurado = r.id_reembolso
+where r.status = 'abe'
+////////////////////////////////////////////////
+
+===============_mecanico_==============================================
+11962410948///
+980364892
+
+====================_tim_===================================================
+2629
+
+http://192.168.1.1/main.html
+Us:admin
+senh:admin
+modem Paulo
+Login: T1m4dm
+Senha: @T1m@dml1v@
+////////
+Casa57Tim
+Fabrica.01
+
+
+Conexão PPPoE:
+Usuário: guest
+Senha: guest
+============================================================================
+NOME:JOSÉ CLOVES CORREIA DE ARAUJO
+RG:88.743.962-X
+CPF:001.127.768-84
+NASCIMENTO:01/10/1946
+NOME MÃE:MARIA PEREIRA DE ARAUJO
+INSTALAÇÃO:122603945
+7132
+f,TIMfIXO:10341
+11959515093
+
+P-2019097708245
+38, casa2
+201910571954
+/////////////////
+2019102363723
+============================================================================
+Bom dia,
+
+Segue meu Cv atualizado. 
+Pretensão PJ: R$80h 
+
+att
+====================================================================
+ instancia de ejb distinta
+
+=================_consultas_====_consulta_==========================================================================================================================================
+5180-2223
+5686
+2838-7100
+///////////////////////////////////////////////////////////
+AVENIDA BRIGADEIRO FARIA LIMA, 2013 - SALA 7 F
+(11) 38134685
+///////////////////////////////////////////////////////////
+RUA PELOTAS, 707 (11) 5080-8908
+natalia/17-09 13h
+metro-> ana rosa
+////////////////////////////////////////////////////////////
+dr juliana 
+15:50
+////////////////////////////////////////////////////////////
+=====================================================================================================================================================================================
+==============_amil_=============================================================
+3004-1000
+3003-1030
+3003-1333 exame de sangue.
+Ncarterinha-07301974 9
+17
+
+nBeneficiario:073019749
+EXAMES:
+AVENIDA SANTO AMARO, 5662 (11) EXAMES
+SANTO AMARO, SAO PAULO
+6H AS 12
+
+
+
+===============_npm_================================================
+npm install http-server -g
+http-server
+====================================================================
+Brintellix 5mg
+https://consultaremedios.com.br/brintellix/bula
+
+
+Donaren Retard 150mb
+trazodona
+
+
+Declaração de último dia trabalhado
+
+Beneficios
+6250724323
+=========_chip_gps_============================================================
+011983063473
+https://meutim.tim.com.br/novo
+us:11983063473
+senha:2629
+
+Begin123456
+Admin123456 011965501919
+Admin123456 011987629065
+Admin123456 011976369834
+Time zone123456 -3
+IMEI:355227045064573
+     355227045064573
+Adminip123456 www.19gps.net 7018
+Check123456
+
+
+http://configurando-gps-gt02ahy.blogspot.com/
+
+11965501919
+sh:8955
+
+Enterprise: NJVYC-BMHX2-G77MM-4XJMR-6Q8QF
+Professional: KBJFW-NXHK6-W4WJM-CRMQB-G3CDH
+
+====================================================================
+
+https://www.youtube.com/watch?v=aGCdLKXNF3w
+https://thepiratebay-proxylist.org/
+
+
+https://www.youtube.com/watch?v=AljlfNqZp_E
+
+https://www.youtube.com/watch?v=VU38CEVwPck
+
+
+Procuro uma vaga no mercado onde possa colocar minhas habilidades em prática e fazer o que precisa ser feito acontecer.
+
+23.096.105/0001-91
+
+
+Dados Empresa:
+Nome Empresa:T.J.Correia de Araujo
+CNPJ:23.096.105/0001-91
+Endereco:Rua Diogo Dias, 57
+Cep:05861-270 - Sao paulo - Capital
+------------------------------------
+Dados Bancario:
+BANCO:341
+DescBanco:Itau
+Agencia:0160
+C/C:33056-9
+CNAE-NF:95.11-8-00
+////////////
+Dados Bancario:
+BANCO:341
+DescBanco:Itau
+Agencia:0262
+C/C:21750-8
+Cpf:322.811.688-32
+
+
+------------------------------------
+Dados Pessoais:
+Nome:Thiago Jose Correia de Araujo
+Rg:42.173.590-9
+Cpf:322.811.688-32
+Endereco:Rua Diogo Dias, 57
+Cep:05861-270 - Sao paulo - Capital
+
+
+
+nosql
+quick sort
+npm install -g typesccd..ript  
+npm install -g @angular/cli
+
+****verificar se o angular cli esta ok *****
+ng -v
+
+****criar projeto com o angular cli****
+ng new nome_projeto
+
+****iniciar o servidor node****
+ng server
+
+******CONFIGURANDO O tsconfig.json************
+******CONFIGURANDO O tsconfig.json************
+Ctrl+Shit+B no VS Code
+E SELECIONAR O ARQUIVO !!!!
+
+=======_openshift_==========================================================
+http://www.devops-sys.com.br/index.php/2018/02/27/instalacao-do-openshift-enterprise/
+
+
+
+*******ADICIONANDO BIBLIOTECAS TYPESCRIPT NO MEUS PROJETOS ****************
+npm init
+npm install --save lodash@4.14
+"typeRoots":[
+    "node_modules/@types"
+]
+
+*************exemplo criando um novo projeto usando CLI ****************
+ng new jedi-academy --prefix=jad
+
+
+*******arquivo polyfills.ts********
+USADO PARA ARMEZENAR SCRIPS PARA DA SUPORTES A BROWSERS ANTIGOS !!!!!
+INCLUSIVE INTERNACIONALIZAÇÃO 
+
+*******arquivo main.ts********
+primeiro arquivo que o webpak executa na aplicação.
+
+***********************************************
+***********comando criar um component**********
+
+ng g c nomeComponent --spec=false /*s/ arquivo de teste */
+
+ng g c header --spec=false /*s/ arquivo de teste */
+
+jcruz@aubay.com
+
+**************************************************
+*************************************************
+SaaS, PaaS e IaaS
+
+
+
+******PROPERTY-BINDING***************************
+É QUANDO VC PRECISA LINKAR O VALOR DE UMA PROPRIEDADE A UMA EXPRESSÃO ANGULAR
+*************************************************
+ONE-WAY - COMPONET PARA O TEMPLATE 
+
+***************************************************
+File-->Preference --> Settings -- cole do lado direito !!!
+// settings.json
+{
+    "terminal.integrated.shell.windows": "C:\\Windows\\System32\\cmd.exe",
+    "terminal.integrated.shellArgs.windows": [
+        "/k",
+        "C:\\Program Files\\Git\\bin\\bash.exe"
+    ]
+}
+
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
+	 log.info("MOCKS ENTITY LIVRO" + toString());
+
+4904031
+
+cd C:\Program Files (x86)\MySQL\MySQL Server 5.0\bin
+mysql.exe -h localhost -u root -p
+
+
+logging:
+  level:
+    ROOT: DEBUG
+
+<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+			</resource>
+		</resources>
+*************************************************************************
+echo "# estudos2" >> README.md
+git init
+git add README.md
+git commit -m "first commit"
+git remote add origin git@github.com:tjca1/estudos2.git
+git push -u origin master
+
+***********
+git config --global user.email tjca1@hotmail.com
+git config --global user.name "Thiago Araujo"
+git 
+
+******CORRIGINDO O ERRO**************************************************
+Angular: error ... cli, common, compiler, compiler-cli, core, forms, http ... platform-browser, platform-browser-dynamic, router
+rm -rf package-lock.json node_modules && npm install 
+***********************************************************************
+https://www.onlineexambuilder.com/pt/java-prova-1/exam-195948?logout=1
+https://www.onlineexambuilder.com/pt/raciocinio-logico-e-conhecimento-especifico/exam-193700
+
+André Enzo Miguel Aparício
+769.345.028-92
+11.875.389-7
+22/12/1996
+
+Considerando um processo que envolve as etapas de identificação, atores envolvidos, pre-condições
+
+******INSTALANDO O JSON-SERVER*************************************
+npm install -g json-server
+
+*************INICIAR O JSON-SERVER*************************************
+json-server db.json
+************************************************************************
+REACTIVE PROGRAMMING = OUVI O EVENTO É NOTIFICADO E RESPONDE A ELE
+PADRÃO DE PROJETOS OBSERVER
+***************ADVOGADO DIA 10/04 AS 15H********************************
+<tr>
+            <th>Frete:</th>
+
+            <td class="text-right">R$ 8,00</td>
+          </tr>
+
+
+##### BAIXANDO ######
+
+![image](https://user-images.githubusercontent.com/28515964/38455828-c7111586-3a53-11e8-80f4-82f02fea047a.png)
+
+##### CONFIRURANDO ######
+![confeclipse](https://user-images.githubusercontent.com/28515964/38456004-f3ba07f8-3a55-11e8-8a75-c86782c8e879.png)
+
+##### TESTE ######
+![testesappsaraiva](https://user-images.githubusercontent.com/28515964/38456164-ac0e778e-3a57-11e8-86c2-bd340b4816df.png)
+
+##### OVERVIEW BASE DE DADOS MYSQL ######
+
+![base_dados](https://user-images.githubusercontent.com/28515964/38456189-f230a124-3a57-11e8-837a-a0fa470be616.png)
+
+
+SOA/BPM
+=====================_ubuntu_============================================
+****mover a barra lateral p baixo****
+apt install unity-tweak-tool
+
+ 
+ 
+========_jboss_===================================================== 
+$JBOSS_HOME/bin/standalone.sh -b=0.0.0.0 -bmanagement=0.0.0.0 
+$JBOSS_HOME/bin/standalone.sh --connect 
+$JBOSS_HOME/bin/standalone.sh --admin-only 
+.war.undeployed 
+.war.deployed 
+ 
+  JAVA_OPTS:  -server -verbose:gc -Xloggc:"/opt/EAP-7.0.0/standalone/log/gc.log" -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+UseGCL 
+ogFileRotation -XX:NumberOfGCLogFiles=5 -XX:GCLogFileSize=3M -XX:-TraceClassUnloading -Xms1303m -Xmx1303m -XX:MetaspaceSize=96M -XX:Max 
+MetaspaceSize=256m -Djava.net.preferIPv4Stack=true -Djboss.modules.system.pkgs=org.jboss.byteman -Djava.awt.headless=true 
+ 
+============================================================= 
+35.194.11.58 
+standalone.bat/standalone.sh -  
+ 
+    35.184.154.42 
+ssh rafael.vico-smanager.com.br@35.184.154.42 
+ 
+/home/jboss/eap7_labs/exercise/eap7-dev-labs/02_EAP6_Configuration/example.war 
+ 
+JBOSS_HOME=/opt/EAP-7.0.0 
+================================================== 
+Acredita??o     Curso     Categoria     Dura??o     Disponibilidade 
+Cloud Automation - Delivery Specialist     Red Hat Ansible Tower Implementation     cloud     16.0     Sempre dispon?veis 
+Cloud Automation - Delivery Specialist     Deployment with Red Hat Ansible Automation     cloud     45.0     Sempre dispon?veis 
+Cloud Automation - Delivery Specialist     Red Hat Ansible Automation Foundations     cloud     4.0     Sempre dispon?veis 
+ssh rafael.vico-smanager.com.br@eap7-1b6c.rhpds.opentlc.com 
+ 
+=================_vms_======================================================================================================= 
+ssh rafael.vico-smanager.com.br@85.190.176.153 
+ 
+ssh thiago.araujo-smanager.com.br@35.188.103.69 
+
+thiago.araujo-smanager.com.br@eap7-3765.rhpds.opentlc.com
+ 
+ssh thiago.araujo-smanager.com.br@eap7-0a87.rhpds.opentlc.com 
+
+ssh thiago.araujo-smanager.com.br@eap7-76c5.rhpds.opentlc.com
+
+ssh thiago.araujo-smanager.com.br@workstation-8d65.rhpds.opentlc.com
+
+
+
+eap7-0a87.rhpds.opentlc.com 
+
+/////////////_opentlc_//////////////////////////////////////////////////
+ssh thiago.araujo-smanager.com.br@35.184.221.139
+35.184.221.139
+104.197.244.181
+104.197.244.181
+ssh thiago.araujo-smanager.com.br@104.197.244.181
+ssh thiago.araujo-smanager.com.br@104.197.244.181
+ssh thiago.araujo-smanager.com.br@oselab-e6ef.oslab.opentlc.com
+ssh thiago.araujo-smanager.com.br@workstation-e8cf.rhpds.opentlc.com
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////_Ansible Deployment Lab///////////////////////////////////////////////////////////////////////////////////////////////////////////
+$ sudo -u student -i
+2. Instale e Configure Ansible
+Neste exercício, você instala o Ansible em um nó de controle e configura-o para conexões para um host gerenciado.
+
+2.1. Configurar o ambiente
+Faça o login como usuário estudante na estação de trabalho e execute a instalação da instalação do laboratório:
+
+[Student @ workstation ~] $ lab install setup
+Este script de configuração garante que o host gerenciado, servera, seja acessível na rede.
+
+Verifique se a versão prévia do Python está instalada na estação de trabalho:
+
+[student @ workstation ~] $ yum list installed python
+
+2.2. Instale Ansible e Confirme a Conexão SSH
+Instale o Ansible na estação de trabalho:
+
+[Student @ workstation ~] $ sudo yum install -y ansible
+Isso permite que a estação de trabalho seja o nó de controle.
+
+Verifique se você pode estabelecer uma conexão SSH da estação de trabalho para servera:
+
+[Student @ workstation ~] $ ssh servera.lab.example.com
+Aviso: adicionado permanentemente 'servera.lab.example.com, 172.25.250.10' (ECDSA) à lista de hosts conhecidos.
+Isso garante que Ansible é capaz de se conectar do nó de controle ao host gerenciado usando SSH.
+
+Saia da sessão SSH:
+
+[student @ servera ~] $ exit
+2.3. Criar e usar o arquivo de inventário
+No nó de controle, crie um arquivo de inventário, /home/student/dep-install/inventory, que contém um grupo chamado dev composto de um único host gerenciado, servera.lab.example.com:
+
+Crie e mude para o diretório / home / student / dep-install:
+
+[Student @ workstation ~] $ mkdir / home / student / dep-install
+[Student @ workstation ~] $ cd / home / student / dep-install
+Crie o arquivo de inventário e adicione as seguintes entradas ao arquivo para criar o 
+grupo de host do dev e seu membro único servera.lab.example.com:
+
+[dev]
+servera.lab.example.com
+
+Execute o seguinte comando ansible com a opção -i para usar o arquivo de inventário recém-criado:
+
+ansible dev -i inventory --list-hosts
+  hosts (1):
+    servera.lab.example.com
+A opção --list-hosts permite que você verifique se o grupo de host do dev resolve o seu único membro, servera.
+
+2.4. Avalie seu progresso
+Avalie seu trabalho:
+
+/home/student/inventory
+
+[student @ workstation ~] $ lab install grade
+Corrija todas as falhas relatadas.
+
+Reinicie o script até o sucesso.
+
+3. Gerencie arquivos de configuração Ansible
+Neste exercício, você personaliza seu ambiente Ansible com configurações persistentes.
+
+3.1. Configurar o ambiente
+Faça o login como usuário estudante na estação de trabalho e execute a configuração de gerenciamento do laboratório:
+
+[Student @ workstation ~] $ lab gerencie a configuração
+Crie e mude para o diretório / home / student / dep-manage:
+
+[aluno @ estação de trabalho ~] $ mkdir /home/student/dep-manage
+[Student @ workstation ~] $ cd /home/student/dep-manage
+Você usa este diretório para armazenar os arquivos para este exercício.
+
+3.2. Criar arquivo de configuração Ansible
+Crie um arquivo de configuração ansible.cfg de nível de diretório, no diretório recém-criado.
+
+Coloque as seguintes entradas de configuração no arquivo ansible.cfg:
+
+[defaults]
+inventory=/home/student/dep-manage/inventory
+Isso garante que o arquivo configure Ansible para usar um inventário localizado em /home/student/dep-manage/inventory.
+
+3.3. Configurar arquivo de inventário
+No arquivo de inventário de nível de diretório, crie um grupo de host próprio, que consiste no seguinte:
+vi /home/student/dep-manage/inventory
+
+O host localhost
+Um grupo de host intranetweb consistindo do host servera.lab.example.com
+Todos os grupos de acolhimento são compostos por grupos de eu e de intranet
+a) Crie o mesmo grupo de host adicionando as seguintes entradas:
+
+[myself]
+localhost
+
+b)Crie o grupo hospedeiro intranetweb adicionando as seguintes entradas:
+
+[intranetweb]
+servera.lab.example.com
+
+c)Crie todos os grupos de hosts adicionando as seguintes entradas:
+[everyone:children]
+myself
+intranetweb
+
+2.Verifique a resolução do meu grupo de host com o comando ansible:
+    [student@workstation dep-manage]$ ansible myself -i inventory --list-hosts
+    [student@workstation dep-manage]$ ansible localhost -i inventory --list-hosts
+    [student@workstation dep-manage]$ ansible intranetweb -i inventory --list-hosts
+
+    A opção --list-hosts lista os hosts gerenciados referenciados pelo grupo hospedeiro.
+
+3.4. Adicionar Escalação de Privilégios para ansible.cfg
+Neste exercício, você ativa e configura a escalação de privilégios criando a seção 
+[privilégge_escalation] do arquivo ansible.cfg.
+
+1.Crie a seção privilégio_calculação:
+[privilege_escalation]
+2.Adicione a seguinte entrada à seção privilégio_calculação para habilitar a escalação de privilégios:
+become=True
+3.Adicione a seguinte entrada para definir a escalação de privilégio para usar sudo:
+become_method=sudo
+4.Adicionar uma entrada para configurar o Usuário do escalonamento de privilégios:
+become_user=root
+5.Adicione a seguinte entrada para ativar a solicitação de senha durante a escalada de privilégios:
+become_ask_pass=True
+///
+
+[privilege_escalation]
+become=True
+become_method=sudo
+become_user=root
+become_ask_pass=True
+/////////////
+
+Verifique suas alterações no inventário e nos arquivos ansible.cfg:
+Use ansible com a opção --list-hosts.
+A opção --list-hosts resolve o grupo hospedeiro intranetweb para seus membros host gerenciados.
+Quando solicitado a senha do SUDO, insira o student.
+[student@workstation dep-manage]$ ansible intranetweb -i inventory --list-hosts -v
+
+
+
